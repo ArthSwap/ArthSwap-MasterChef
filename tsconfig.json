@@ -1,0 +1,49 @@
+{
+  "include": ["./scripts", "./test"],
+  "files": ["./hardhat.config.ts"],
+  "compilerOptions": {
+    // output settings
+    "outDir": "./dist",
+    "rootDir": "./",
+    "module": "CommonJS",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "incremental": true,
+    "preserveWatchOutput": true,
+    // source-mappings
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    // type declarations
+    "declaration": true,
+    "declarationDir": "./dist/types",
+    "declarationMap": true,
+    "lib": ["ES2021.String"],
+    "skipLibCheck": true,
+    // downleveling / downcompiling
+    "target": "ES2017",
+    "importHelpers": true,
+    // import settings
+    "baseUrl": "./",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    // strict options
+    "strict": true,
+    "strictPropertyInitialization": false,
+    // linter options / type checks
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": false,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    // misc
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true
+  }
+}

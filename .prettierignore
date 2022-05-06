@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage.json
+coverage
+artifacts
+cache
+.github
+doc-templates
