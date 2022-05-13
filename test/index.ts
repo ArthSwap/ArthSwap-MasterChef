@@ -119,11 +119,26 @@ describe('MasterChef', function () {
     });
 
     it('Should revert if invalid pool', async function () {
-      expect(
-        await this.chef
-          .set(0, 10, this.rewarder.address, false)
-          .catch((error: Error) => error.message),
-      ).to.equal('VM Exception while processing transaction: invalid opcode');
+      await expect(
+        this.chef.set(0, 10, this.rewarder.address, false),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
+
+    it('Should call updateAllPools', async function () {
+      await this.chef.add(10, this.rlp.address, this.rewarder.address);
+      await advanceBlockTo(1);
+      await expect(this.chef.set(0, 10, this.dummy.address, false))
+        .to.emit(this.chef, 'LogUpdatePool')
+        .withArgs(
+          0,
+          (
+            await this.chef.poolInfos(0)
+          ).lastRewardBlock,
+          await this.rlp.balanceOf(this.chef.address),
+          (
+            await this.chef.poolInfos(0)
+          ).accARSWPerShare,
+        );
     });
   });
 
@@ -220,6 +235,11 @@ describe('MasterChef', function () {
   });
 
   describe('PendingARSW', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(
+        this.chef.pendingARSW(0, this.alice.address),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
     it('PendingARSW should equal ExpectedARSW', async function () {
       await this.chef.add(10, this.rlp.address, this.rewarder.address);
       await this.rlp.approve(this.chef.address, getBigNumber(10));
@@ -337,11 +357,28 @@ describe('MasterChef', function () {
     });
 
     it('Updating invalid pools should fail', async function () {
-      expect(
-        await this.chef
-          .massUpdatePools([0, 10000, 100000])
-          .catch((error: Error) => error.message),
-      ).to.equal('VM Exception while processing transaction: invalid opcode');
+      await expect(
+        this.chef.massUpdatePools([0, 10000, 100000]),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
+  });
+
+  describe('updateAllPools', function () {
+    it('Should call updatePool', async function () {
+      await this.chef.add(10, this.rlp.address, this.rewarder.address);
+      await advanceBlockTo(1);
+      await expect(this.chef.updateAllPools())
+        .to.emit(this.chef, 'LogUpdatePool')
+        .withArgs(
+          0,
+          (
+            await this.chef.poolInfos(0)
+          ).lastRewardBlock,
+          await this.rlp.balanceOf(this.chef.address),
+          (
+            await this.chef.poolInfos(0)
+          ).accARSWPerShare,
+        );
     });
   });
 
@@ -351,9 +388,48 @@ describe('MasterChef', function () {
         .to.emit(this.chef, 'LogPoolAddition')
         .withArgs(0, 10, this.rlp.address, this.rewarder.address);
     });
+
+    it('Should call updateAllPools', async function () {
+      await this.chef.add(10, this.rlp.address, this.rewarder.address);
+      await advanceBlockTo(1);
+      await expect(this.chef.add(10, this.lp.address, this.rewarder.address))
+        .to.emit(this.chef, 'LogUpdatePool')
+        .withArgs(
+          0,
+          (
+            await this.chef.poolInfos(0)
+          ).lastRewardBlock,
+          await this.rlp.balanceOf(this.chef.address),
+          (
+            await this.chef.poolInfos(0)
+          ).accARSWPerShare,
+        );
+    });
+
+    it('Should reject duplicated LP token', async function () {
+      this.chef.add(10, this.rlp.address, this.rewarder.address);
+      await expect(
+        this.chef.add(10, this.rlp.address, this.rewarder.address),
+      ).to.be.revertedWith('MasterChef: duplicate LP token');
+    });
+    describe('checkPoolDuplicate', function () {
+      it('Should be able to detect duplicate LP token', async function () {
+        this.chef.add(10, this.rlp.address, this.rewarder.address);
+        // Should be passed without error
+        await this.chef.exposedCheckPoolDuplicate(this.rewarder.address);
+        await expect(
+          this.chef.exposedCheckPoolDuplicate(this.rlp.address),
+        ).to.be.revertedWith('MasterChef: duplicate LP token');
+      });
+    });
   });
 
   describe('UpdatePool', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(this.chef.updatePool(0)).to.be.revertedWith(
+        'MasterChef: invalid pool id',
+      );
+    });
     it('Should emit event LogUpdatePool', async function () {
       await this.chef.add(10, this.rlp.address, this.rewarder.address);
       await advanceBlockTo(1);
@@ -410,15 +486,18 @@ describe('MasterChef', function () {
     });
 
     it('Depositing into non-existent pool should fail', async function () {
-      expect(
-        await this.chef
-          .deposit(1001, getBigNumber(0), this.alice.address)
-          .catch((error: Error) => error.message),
-      ).to.equal('VM Exception while processing transaction: invalid opcode');
+      await expect(
+        this.chef.deposit(0, getBigNumber(0), this.alice.address),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
     });
   });
 
   describe('Withdraw', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(
+        this.chef.withdraw(0, getBigNumber(0), this.alice.address),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
     it('reverts if withdraw 0 amount', async function () {
       await this.chef.add(10, this.rlp.address, this.rewarder.address);
       await expect(
@@ -445,6 +524,11 @@ describe('MasterChef', function () {
   });
 
   describe('Harvest', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(this.chef.harvest(0, this.alice.address)).to.be.revertedWith(
+        'MasterChef: invalid pool id',
+      );
+    });
     it('Should give back the correct amount of ARSW and reward', async function () {
       await this.r.transfer(this.rewarder.address, getBigNumber(100000));
       await this.chef.add(10, this.rlp.address, this.rewarder.address);
@@ -518,6 +602,11 @@ describe('MasterChef', function () {
   });
 
   describe('WithdrawAndHarvest', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(
+        this.chef.withdrawAndHarvest(0, getBigNumber(1), this.alice.address),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
     it('should withdraw and harvest at the same time', async function () {
       await this.r.transfer(this.rewarder.address, getBigNumber(100000));
       await this.chef.add(10, this.rlp.address, this.rewarder.address);
@@ -634,6 +723,11 @@ describe('MasterChef', function () {
   });
 
   describe('EmergencyWithdraw', function () {
+    it('Should revert if invalid pool', async function () {
+      await expect(
+        this.chef.emergencyWithdraw(0, this.alice.address),
+      ).to.be.revertedWith('MasterChef: invalid pool id');
+    });
     it('Should emit event EmergencyWithdraw', async function () {
       await this.r.transfer(this.rewarder.address, getBigNumber(100000));
       await this.chef.add(10, this.rlp.address, this.rewarder.address);

@@ -38,4 +38,8 @@ contract MasterChefMock is MasterChef {
     function setOriginBlock(uint64 originBlock) public {
         ARTHSWAP_ORIGIN_BLOCK = originBlock;
     }
+
+    function exposedCheckPoolDuplicate(IERC20 lpToken) public view {
+        checkPoolDuplicate(lpToken);
+    }
 }

@@ -104,9 +104,22 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         ARSW = arswToken;
     }
 
+    /// @dev Modifier to check that the pool is valid
+    modifier validPool(uint256 pid) {
+        require(pid < poolInfos.length, "MasterChef: invalid pool id");
+        _;
+    }
+
     /// @notice Returns the number of MasterChef pools.
     function poolLength() external view returns (uint256 pools) {
         pools = poolInfos.length;
+    }
+
+    /// @dev Prevent duplicate LP token
+    function checkPoolDuplicate(IERC20 lpToken) internal view {
+        for (uint256 pid = 0; pid < lpTokens.length; pid++) {
+            require(lpTokens[pid] != lpToken, "MasterChef: duplicate LP token");
+        }
     }
 
     /// @notice Add a new LP to the pool. Can only be called by the owner.
@@ -119,6 +132,8 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         IERC20 lpToken,
         IRewarder rewarder
     ) external onlyOwner {
+        checkPoolDuplicate(lpToken);
+        updateAllPools();
         uint256 lastRewardBlock = block.number;
         totalAllocPoint = totalAllocPoint.add(allocPoint);
         lpTokens.push(lpToken);
@@ -149,7 +164,8 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         uint256 allocPoint,
         IRewarder rewarder,
         bool overwrite
-    ) external onlyOwner {
+    ) external validPool(pid) onlyOwner {
+        updateAllPools();
         totalAllocPoint = totalAllocPoint.sub(poolInfos[pid].allocPoint).add(
             allocPoint
         );
@@ -172,6 +188,7 @@ contract MasterChef is BoringOwnable, BoringBatchable {
     function pendingARSW(uint256 pid, address user)
         external
         view
+        validPool(pid)
         returns (uint256 pending)
     {
         PoolInfo memory pool = poolInfos[pid];
@@ -191,12 +208,19 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         ).sub(userInfo.rewardDebt).toUInt256();
     }
 
-    /// @notice Update reward variables for all pools. Be careful of gas spending!
+    /// @notice Update reward variables for selected pools. Be careful of gas spending!
     /// @param pids Pool IDs of all to be updated. Make sure to update all active pools.
     function massUpdatePools(uint256[] calldata pids) external {
         uint256 len = pids.length;
         for (uint256 i = 0; i < len; ++i) {
             updatePool(pids[i]);
+        }
+    }
+
+    /// @notice Update reward variables for all pools. Be careful of gas spending!
+    function updateAllPools() public {
+        for (uint256 pid = 0; pid < poolInfos.length; ++pid) {
+            updatePool(pid);
         }
     }
 
@@ -283,7 +307,11 @@ contract MasterChef is BoringOwnable, BoringBatchable {
     /// @notice Update reward variables of the given pool.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @return pool Returns the pool that was updated.
-    function updatePool(uint256 pid) public returns (PoolInfo memory pool) {
+    function updatePool(uint256 pid)
+        public
+        validPool(pid)
+        returns (PoolInfo memory pool)
+    {
         pool = poolInfos[pid];
         if (block.number > pool.lastRewardBlock) {
             uint256 lpSupply = lpTokens[pid].balanceOf(address(this));
@@ -316,7 +344,7 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         uint256 pid,
         uint256 amount,
         address to
-    ) external {
+    ) external validPool(pid) {
         PoolInfo memory pool = updatePool(pid);
         UserInfo storage user = userInfos[pid][to];
 
@@ -344,7 +372,7 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         uint256 pid,
         uint256 amount,
         address to
-    ) external {
+    ) external validPool(pid) {
         PoolInfo memory pool = updatePool(pid);
         UserInfo storage user = userInfos[pid][msg.sender];
         require(amount > 0, "amount should not be 0");
@@ -369,7 +397,7 @@ contract MasterChef is BoringOwnable, BoringBatchable {
     /// @notice Harvest proceeds for transaction sender to `to`.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of ARSW rewards.
-    function harvest(uint256 pid, address to) external {
+    function harvest(uint256 pid, address to) external validPool(pid) {
         PoolInfo memory pool = updatePool(pid);
         UserInfo storage user = userInfos[pid][msg.sender];
         int256 accumulatedARSW = int256(
@@ -407,7 +435,7 @@ contract MasterChef is BoringOwnable, BoringBatchable {
         uint256 pid,
         uint256 amount,
         address to
-    ) external {
+    ) external validPool(pid) {
         PoolInfo memory pool = updatePool(pid);
         UserInfo storage user = userInfos[pid][msg.sender];
         int256 accumulatedARSW = int256(
@@ -444,7 +472,10 @@ contract MasterChef is BoringOwnable, BoringBatchable {
     /// @notice Withdraw without caring about rewards. EMERGENCY ONLY.
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param to Receiver of the LP tokens.
-    function emergencyWithdraw(uint256 pid, address to) external {
+    function emergencyWithdraw(uint256 pid, address to)
+        external
+        validPool(pid)
+    {
         UserInfo storage user = userInfos[pid][msg.sender];
         uint256 amount = user.amount;
         user.amount = 0;
