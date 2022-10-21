@@ -54,8 +54,14 @@ module.exports = {
         format: ['StrictPascalCase'],
       },
       {
-        selector: 'typeParameter',
+        selector: ['parameter'],
+        modifiers: ['unused'],
         format: ['strictCamelCase'],
+        leadingUnderscore: 'require',
+      },
+      {
+        selector: 'typeParameter',
+        format: ['StrictPascalCase'],
       },
       {
         selector: 'property',

@@ -9,3 +9,7 @@ cache
 artifacts
 *.log
 *.DS_Store
+types
+*.csv
+
+.python-version

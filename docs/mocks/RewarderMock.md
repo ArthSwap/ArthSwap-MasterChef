@@ -1,10 +1,10 @@
 ## `RewarderMock`
 
-### `onlyMCV2()`
+### `onlyMasterChef()`
 
 #### parameters
 
-### `constructor(uint256 _rewardMultiplier, contract IERC20 _rewardToken, address _MASTERCHEF_V2)` (public)
+### `constructor(uint256 _rewardMultiplier, contract IERC20 _rewardToken, address _MASTERCHEF)` (public)
 
 #### parameters
 

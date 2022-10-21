@@ -15,3 +15,7 @@
 ### `setOriginBlock(uint64 originBlock)` (public)
 
 #### parameters
+
+### `exposedCheckPoolDuplicate(contract IERC20 lpToken)` (public)
+
+#### parameters

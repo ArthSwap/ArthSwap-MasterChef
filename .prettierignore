@@ -6,3 +6,4 @@ artifacts
 cache
 .github
 doc-templates
+types
