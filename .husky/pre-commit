@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-yarn compile
-yarn lint
-yarn format
-yarn test:coverage
-poetry run slither . || true

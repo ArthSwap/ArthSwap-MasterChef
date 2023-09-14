@@ -16,6 +16,11 @@ const config: HardhatUserConfig = {
       gasPrice: 0,
       initialBaseFeePerGas: 0,
     },
+    rocstar: {
+      chainId: 692,
+      url: 'https://rocstar.astar.network',
+      accounts: [process.env.PRIVATE_KEY!],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

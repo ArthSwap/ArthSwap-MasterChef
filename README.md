@@ -12,20 +12,20 @@ Audit Report by PeckShield: [https://github.com/peckshield/publications/tree/mas
 
 - MasterChef: [0xc5b016c5597D298Fe9eD22922CE290A048aA5B75](https://blockscout.com/astar/address/0xc5b016c5597D298Fe9eD22922CE290A048aA5B75)
 
-## Development
+## Rocstar Swap Demo
+
+### Set private key using `.env` file
+
+Please refer `.env.example` for example.
 
 ### Install Dependencies
 
-`yarn`
+``` sh
+yarn && yarn compile
+```
 
 ### Run Script
 
-`yarn hardhat run [script] --network mainnet`
+**Note**: You should have at least 0.2 RSTR in your account to execute following script.
 
-### compile .sol files
-
-`yarn hardhat compile`
-
-### Run test
-
-`yarn hardhat test`
+`yarn hardhat run scripts/rocstar/swap-demo.ts --network rocstar`

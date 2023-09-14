@@ -3,7 +3,6 @@
   "description": "Smart contracts of ArthSwap's Farming/Harvest",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky install && poetry install && env COMPILE_MODE=production yarn run compile",
     "compile": "hardhat compile",
     "test": "hardhat test",
     "test:gas-report": "env REPORT_GAS=true yarn run test",
