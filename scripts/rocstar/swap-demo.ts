@@ -1,4 +1,4 @@
-import { parseEther, parseUnits } from 'ethers/lib/utils';
+import { parseEther } from 'ethers/lib/utils';
 import { ethers, network } from 'hardhat';
 import { ROUTER_ADDRESS, ARSW_ADDRESS, WRSTR_ADDRESS } from './addresses';
 import {

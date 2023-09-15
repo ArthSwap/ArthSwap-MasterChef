@@ -12,4 +12,12 @@ interface IArthRouter {
         returns (
             uint256[] memory amounts
         );
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
 }
