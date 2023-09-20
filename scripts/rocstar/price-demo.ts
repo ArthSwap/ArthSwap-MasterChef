@@ -28,7 +28,7 @@ async function main(): Promise<void> {
     ARSW_ADDRESS < WRSTR_ADDRESS ? [reserve0, reserve1] : [reserve1, reserve0];
 
   // Adjust decimal points for price
-  const scalar = new BigNumber(10).pow(wrstrDecimals - arswDecimals);
+  const scalar = new BigNumber(10).pow(arswDecimals - wrstrDecimals);
   const arswPrice = new BigNumber(wrstrReserve.toString())
     .div(arswReserve.toString())
     .multipliedBy(scalar);
